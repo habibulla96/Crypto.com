@@ -39,5 +39,5 @@ class LogoutView(APIView):
 
     def post(self, request):
         user = request.user
-        Token.objects.filter(user=user).delete
+        Token.objects.filter(user=user).delete()
         return Response('Successfully logged out', status=status.HTTP_200_OK)

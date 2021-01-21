@@ -76,6 +76,15 @@ class Comment(generics.CreateAPIView):
         model = Comments
 
 
+
+
+
+
+
+
+
+
+
 # class PostView(generics.ListCreateAPIView):
 #     queryset = Post.objects.all()
 #     serializer_class = PostSerializer

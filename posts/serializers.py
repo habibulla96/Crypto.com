@@ -21,6 +21,7 @@ class PostSerializer(serializers.ModelSerializer):
         representation['author'] = instance.author.email
         representation['category'] = CategorySerializer(instance.category).data
         representation['images'] = PostImageSerializer(instance.images.all(), many=True, context=self.context).data
+        representation['post_comment'] = CommentSerializer(instance.post_comment.all(), many=True).data
         return representation
 
     def create(self, validated_data):
