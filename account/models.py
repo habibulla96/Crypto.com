@@ -48,9 +48,6 @@ class MyUser(AbstractUser):
         activation_code = md5_object.hexdigest()
         self.activation_code = activation_code
 
-    def activate_with_code(self, code):
-        if self.activation_code != code:
-            raise Exception('Неверный код активации')
-        self.is_active = True
-        self.activation_code = ''
-        self.save()
+
+
+
