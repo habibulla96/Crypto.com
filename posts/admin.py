@@ -15,3 +15,4 @@ class PostAdmin(admin.ModelAdmin):
 
 admin.site.register(Category)
 admin.site.register(Comments)
+admin.site.register(Like)

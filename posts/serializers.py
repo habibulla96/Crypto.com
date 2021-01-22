@@ -14,14 +14,14 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'category', 'created_at', 'text', 'post_comment')
+        fields = ('id', 'title', 'category', 'created_at', 'text')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['author'] = instance.author.email
         representation['category'] = CategorySerializer(instance.category).data
         representation['images'] = PostImageSerializer(instance.images.all(), many=True, context=self.context).data
-        representation['post_comment'] = CommentSerializer(instance.post_comment.all(), many=True).data
+        representation['comment'] = CommentSerializer(instance.comment.all(), many=True).data
         return representation
 
     def create(self, validated_data):
@@ -54,7 +54,22 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-
+    """Сериалайзер для коментов"""
     class Meta:
+        """Добавление модели и полей"""
         model = Comments
         fields = '__all__'
+
+
+class CommentDetailSerializer(serializers.ModelSerializer):
+    """Сериалайзер для деталей комментов"""
+    class Meta:
+        """Добавление модели и полей"""
+        model = Comments
+        fields = '__all__'
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['id']

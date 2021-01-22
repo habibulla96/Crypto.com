@@ -8,25 +8,25 @@ from rest_framework.response import Response
 
 from .serializers import *
 from rest_framework.views import APIView
+from .utils import send_activation_mail
 
 
-class RegisterView(APIView):
+class RegistrationAPIView(APIView):
 
     def post(self, request):
-        data = request.data
-        serializer = RegisterSerializer(data=data)
+        serializer = RegistrationAPISerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response('Successfully signed up!', status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            if user:
+                user.create_activation_code()
+                send_activation_mail(user.email, user.activation_code)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ActivateView(APIView):
+class ActivationView(APIView):
     def get(self, request, activation_code):
-        User = get_user_model()
-        user = get_object_or_404(User, activation_code=activation_code)
-        user.is_active = True
-        user.activation_code = ''
-        user.save()
+        user = get_object_or_404(MyUser, activation_code=activation_code)
+        user.activate_with_code(activation_code)
         return Response('Your account successfully activated!', status=status.HTTP_200_OK)
 
 

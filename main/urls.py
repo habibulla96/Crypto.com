@@ -4,11 +4,12 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from posts.views import CategoryListView, PostsViewSet, PostImageView
+from posts.views import *
 
 
 router = DefaultRouter()
 router.register('posts', PostsViewSet)
+router.register('comments', CommentViewSet)
 
 
 urlpatterns = [
@@ -18,4 +19,5 @@ urlpatterns = [
     path('v1/api/add-image/', PostImageView.as_view()),
     path('v1/api/account/', include('account.urls')),
     path('v1/api/', include(router.urls)),
+    path('v1/api/posts/<int:pk>/like/', LikeView.as_view())
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

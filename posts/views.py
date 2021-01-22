@@ -6,8 +6,10 @@ from django.utils import timezone
 from rest_framework.decorators import api_view, action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import generics, viewsets, status
+from rest_framework.exceptions import ValidationError
+from rest_framework import generics, viewsets, status, mixins
+from rest_framework.viewsets import ModelViewSet
+
 from .permissions import IsPostAuthor
 
 from .models import *
@@ -68,62 +70,40 @@ class PostImageView(generics.ListCreateAPIView):
         return {'request': self.request}
 
 
-class Comment(generics.CreateAPIView):
+class CommentViewSet(ModelViewSet, mixins.DestroyModelMixin):
     queryset = Comments.objects.all()
     serializer_class = CommentSerializer
 
     class Meta:
         model = Comments
 
+    def delete(self, request, *args, **kwargs):
+        if self.get_queryset().exists():
+            self.get_queryset().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            raise ValidationError('Вы не комментировали')
 
 
+class LikeView(generics.CreateAPIView, mixins.DestroyModelMixin):
+    serializer_class = LikeSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        user = self.request.user
+        post = Post.objects.get(pk=self.kwargs['pk'])
+        return Like.objects.filter(liker=user, post=post)
+
+    def perform_create(self, serializer):
+        if self.get_queryset().exists():
+            raise ValidationError('Вы уже поставили Лайк :)')
+        serializer.save(liker=self.request.user, post=Post.objects.get(pk=self.kwargs['pk']))
+
+    def delete(self, request, *args, **kwargs):
+        if self.get_queryset().exists():
+            self.get_queryset().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            raise ValidationError('Вы не ставили Лайк')
 
 
-
-
-
-
-
-
-# class PostView(generics.ListCreateAPIView):
-#     queryset = Post.objects.all()
-#     serializer_class = PostSerializer
-#
-#
-# class PostDetailView(generics.RetrieveAPIView):
-#     queryset = Post.objects.all()
-#     serializer_class = PostSerializer
-#
-#
-# class PostUpdateView(generics.UpdateAPIView):
-#     queryset = Post.objects.all()
-#     serializer_class = PostSerializer
-#
-#
-# class PostDeleteView(generics.DestroyAPIView):
-#     queryset = Post.objects.all()
-#     serializer_class = PostSerializer
-#
-#
-
-
-
-# @api_view(['GET'])
-# def categories(request):
-#     categories = Category.objects.all()
-#     serializer = CategorySerializer(categories, many=True)
-#     return Response(serializer.data)
-#
-#
-# class PostListView(APIView):
-#     def get(self, request):
-#         posts = Post.objects.all()
-#         serializer = PostSerializer(posts, many=True)
-#         return Response(serializer.data)
-#
-#     def post(self, request):
-#         post = request.data
-#         serializer = PostSerializer(data=post)
-#         if serializer.is_valid(raise_exception=True):
-#             post_saved = serializer.save()
-#         return Response(serializer.data)
